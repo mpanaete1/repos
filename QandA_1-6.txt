@@ -1,0 +1,67 @@
+Q1:
+Configure openshift cluster by creating htpasswd identifier:
+ 
+  HTpasswd identifier name: ex280-htpasswd
+  Identity provider secret name: ex280-idp-secret
+  Add armstrong user with password sestiver
+  Add collins user with password  redhat
+  Add peter user with password   redhat2
+  Add wick user with password redhat4
+  Add job user with password indionce
+
+Q2:
+Configure openshift cluster permission , configure cluster permission so that,
+
+--> Job can have cluster administration task
+--> collins can create project*  --> self provisoiner role
+--> collins cannot have cluster administration task (note:- admin role youhave to add view role  or we can add any role which is not cluster admin role, anything apart from cluster admin role.)
+--> armstrong cannot create project remove self provisiuoner
+--> Kubeadmin user should be deleted
+
+
+Q3:
+Configure projects for configuring openshift cluster
+ 
+5 projects should exist:
+ 
+--> Sydney
+--> Tokyo
+--> India
+--> China
+--> USA
+ 
+John should have admin access to sydney and usa project
+Elena should have view access to India.
+
+Q4:
+Create groups to configure openshift cluster
+
+Create group named commander and pilot
+Add John and wick as the member of commander group
+Add elena and peter as the member of pilot group
+Commander group should have admin access to sydney
+Pilot group should have view access to USA project
+
+Q5:
+Create Resource Quota
+ 
+Create a resoure quota "ex280-quota" for defining limits for resource access
+for projects in sydney project.
+ 
+i. Total memory amount for max usage is 2Gi
+ii. Total CPUdd wick user with  unit for max usage is "2" kuex280-quotabernetes units
+iii. Total no of pods should be limited to 13
+iv. Total no services should not exceed 10
+v. Total no of replication contollers should be 3
+
+Q6:
+Create Limit Range
+ 
+Create resource limit file "ex280-quotalimit" for defining range
+of resource access based on soft/hard limit.
+ 
+ 
+i. For pods min cpu limit is "5m" and max is "500m"
+ii. For containers min cpu limit is "100m" and max is "500m" and default request of "300m"
+iii. For pods min memory is "300Mi" and max is "500Mi"
+iv. For containers min memory is "200Mi" and max is "600Mi" and  default request of "400Mi"

@@ -1,0 +1,76 @@
+Resource Group: RG-AKS-LAB-WEU01
+Location ID- westeurope
+Subscription - PWA - SUB - LAB
+Subscription ID - /subscriptions/135b490a-8eef-41e8-835e-acf8d3e74bfb
+
+
+RG_NAME="rg-aks-lab-weu01"
+LOCATION="westeurope"
+SUBSCRIPTION="/subscriptions/135b490a-8eef-41e8-835e-acf8d3e74bfb"
+
+VNET_NAME="vnet-aks-lab-weu01"
+SUBNET_NAME="snet-aks-lab-weu01"
+
+AKS_NAME="aks-lab-weu01"
+
+VNET_ID=$(az network vnet show --resource-group $RG_NAME --name $VNET_NAME --query id -o tsv)
+SUBNET_ID=$(az network vnet subnet show --resource-group $RG_NAME --vnet-name $VNET_NAME --name $SUBNET_NAME --query id -o tsv)
+
+ssh-keygen -t rsa -b 4096
+
+Your identification has been saved in /home/syed/.ssh/id_rsa.
+Your public key has been saved in /home/syed/.ssh/id_rsa.pub
+
+az ad sp create-for-rbac  --skip-assignment -n "sp-aks-lab-weu01"
+
+{
+  "appId": "66f17376-97d8-403b-985e-a8c99c9a1e6a",
+  "displayName": "sp-aks-lab-weu01",
+  "password": "xer_ZA5ZxHJwouYBwnKRcJj7XTDpj9ekLi",
+  "tenant": "80573096-bf95-4777-a3d4-ac0df597e2f2"
+}
+
+az group create --location $LOCATION --name $RG_NAME --subscription $SUBSCRIPTION  --tags 'ENV=LAB'
+
+az network vnet create \
+  --name $VNET_NAME \
+  --resource-group $RG_NAME \
+  --address-prefixes 192.168.0.0/24 \
+  --subnet-name $SUBNET_NAME \
+  --subnet-prefixes 192.168.0.0/24 \
+  --location $LOCATION 
+ 
+  
+az aks create \
+  --name $AKS_NAME \
+  --resource-group $RG_NAME \
+  --dns-name-prefix $AKS_NAME \
+  --dns-service-ip 10.0.0.10 \
+  --docker-bridge-address 172.17.0.1/16 \
+  --kubernetes-version 1.21.7 \
+  --location $LOCATION \
+  --network-plugin kubenet \
+  --node-vm-size Standard_B2s \
+  --pod-cidr 10.244.0.0/16 \
+  --service-cidr 10.0.0.0/16 \
+  --load-balancer-sku basic \
+  --enable-cluster-autoscaler \
+  --node-count 2 \
+  --min-count 2 \
+  --max-count 3 \
+  --vnet-subnet-id $SUBNET_ID \
+  --ssh-key-value $HOME/.ssh/id_rsa.pub \	
+  --service-principal "66f17376-97d8-403b-985e-a8c99c9a1e6a" \
+  --client-secret "xer_ZA5ZxHJwouYBwnKRcJj7XTDpj9ekLi" \
+  --tags 'ENV=LAB'
+  
+  FILE="./$AKS_NAME.kubeconfig"
+  
+  az aks get-credentials \
+  -n $AKS_NAME \
+  -g $RG_NAME \
+  --subscription $AKS_SUBSCRIPTION \
+  --admin \
+  --file $FILE
+  
+  export KUBECONFIG=$FILE
